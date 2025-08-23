@@ -53,7 +53,6 @@ def check_calendar(page: Page):
 
     if "Šobrīd visi pieejamie laiki ir aizņemti" in page.content():
         print("❌ No slots available")
-        send_telegram_message("❌ slot yoguuu")
     else:
         print("✅ Slots available!")
         send_telegram_message("✅ Slots available for appointment!")

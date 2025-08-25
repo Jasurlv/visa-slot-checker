@@ -23,7 +23,6 @@ def send_telegram_message(message: str):
             print(f"Failed to send to {chat_id}: {response.status_code} - {response.text}")
 
 def go_to_calendar(page: Page):
-    """Fill form and navigate to calendar page"""
     page.goto("https://pieraksts.mfa.gov.lv/ru/uzbekistan/index", timeout=20000)
 
     page.get_by_label("Имя").fill("Jasur")
@@ -51,11 +50,30 @@ def check_calendar(page: Page):
     if "/step3" not in page.url:
         raise Exception("Session expired → redirected back to index page")
 
-    if "Šobrīd visi pieejamie laiki ir aizņemti" in page.content():
-        print("❌ No slots available")
+    page.locator("#calendar-daygrid").wait_for(state="visible", timeout=10000)
+
+    # Current month
+    active_days = page.locator("#calendar-daygrid .cal-active")
+    if active_days.count() > 0:
+        dates = active_days.evaluate_all("els => els.map(e => e.getAttribute('data-date'))")
+        print(f"✅ Slots available this month: {dates}")
+        send_telegram_message(f"📅 Slots available this month: {', '.join(dates)}")
     else:
-        print("✅ Slots available!")
-        send_telegram_message("✅ Slots available for appointment!")
+        print("❌ No active days in current month")
+
+    # Next month
+    next_btn = page.locator(".calendar-next")
+    if next_btn.is_visible():
+        next_btn.click()
+        page.wait_for_timeout(1000) 
+
+        active_days_next = page.locator("#calendar-daygrid .cal-active")
+        if active_days_next.count() > 0:
+            dates_next = active_days_next.evaluate_all("els => els.map(e => e.getAttribute('data-date'))")
+            print(f"✅ Slots available next month: {dates_next}")
+            send_telegram_message(f"📅 Slots available next month: {', '.join(dates_next)}")
+        else:
+            print("❌ No active days in next month")
 
 if __name__ == "__main__":
     with sync_playwright() as p:

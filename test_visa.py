@@ -60,6 +60,7 @@ def check_calendar(page: Page):
         send_telegram_message(f"📅 Slots available this month: {', '.join(dates)}")
     else:
         print("❌ No active days in current month")
+        send_telegram_message("❌ No active days in current month")
 
     # Next month
     next_btn = page.locator(".calendar-next")
@@ -74,6 +75,7 @@ def check_calendar(page: Page):
             send_telegram_message(f"📅 Slots available next month: {', '.join(dates_next)}")
         else:
             print("❌ No active days in next month")
+            send_telegram_message("❌ No active days in next month")
 
 if __name__ == "__main__":
     with sync_playwright() as p:
